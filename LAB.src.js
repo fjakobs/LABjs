@@ -106,7 +106,7 @@
 				if (scripts.hasOwnProperty(key) && !(scripts[key][sDONE])) return;
 			}
 			ready = bTRUE;
-			if (ready) waitFunc();
+			waitFunc();
 		}
 		function loadTriggerExecute(scriptentry) {
 			if (typeof scriptentry[sLOADTRIGGER] === sFUNCTION) {
