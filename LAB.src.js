@@ -79,7 +79,6 @@
 		
 		var ready = bFALSE,
 			_use_preload = queueExec && opts.preload,
-			_use_cache = _use_preload && opts.cache,
 			_use_script_order = _use_preload && opts.order,
 			_use_xhr_preload = _use_preload && opts.xhr,
 			_auto_wait = opts.preserve,
