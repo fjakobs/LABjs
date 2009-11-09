@@ -31,8 +31,13 @@
 		fNOOP = function(){},
 		append_to = {},
 		all_scripts = {},
-		PAGEROOT = /^[^?#]*\//.exec(oDOCLOC.href)[0], // these ROOTs do not support file:/// usage, only http:// type usage
-		DOCROOT = /^\w+\:\/\/[^\/]+/.exec(PAGEROOT)[0],
+		// strip out file, arguments and location identifier from the location
+		PAGEROOT = /^[^?#]*\//.exec(oDOCLOC.href)[0],
+		reFILEPROTOCOL = /^file\:\/\/\//,
+		oISLOCALMATCH = reFILEPROTOCOL.exec(PAGEROOT),
+		// get the hostname
+		DOCROOT = oISLOCALMATCH ? oISLOCALMATCH[0] : /^\w+\:\/\/[^\/]+/.exec(PAGEROOT)[0],
+		rePROTOCOL = oISLOCALMATCH ? reFILEPROTOCOL : /^\w+\:\/\//,
 		docScripts = fGETELEMENTSBYTAGNAME(sSCRIPT),
 		is_ie = !+"\v1", // feature detection based on Andrea Giammarchi's solution: http://webreflection.blogspot.com/2009/01/32-bytes-to-know-if-your-browser-is-ie.html
 		is_safari = /a/.__proto__=='//', // feature detections from http://www.thespanner.co.uk/2009/01/29/detecting-browsers-javascript-hacks/
@@ -52,13 +57,13 @@
 	;
 	
 	append_to[sHEAD] = fGETELEMENTSBYTAGNAME(sHEAD);
-	append_to[sBODY] = fGETELEMENTSBYTAGNAME(sBODY);
+	append_to[sBODY] = oDOC.body;
 	
 	function canonicalScriptURI(src,base_path) {
 		if (typeof src !== sSTRING) src = "";
 		if (typeof base_path !== sSTRING) base_path = "";
-		var ret = (/^\w+\:\/\//.test(src) ? "" : base_path) + src;
-		return ((/^\w+\:\/\//.test(ret) ? "" : (ret.charAt(0) === "/" ? DOCROOT : PAGEROOT)) + ret);
+		var ret = (rePROTOCOL.test(src) ? "" : base_path) + src;
+		return ((rePROTOCOL.test(ret) ? "" : (ret.charAt(0) === "/" ? DOCROOT : PAGEROOT)) + ret);
 	}
 	function sameDomain(src) { return (canonicalScriptURI(src).indexOf(DOCROOT) === 0); }
 	function scriptTagExists(uri) { // checks if a script uri has ever been loaded into this page's DOM
