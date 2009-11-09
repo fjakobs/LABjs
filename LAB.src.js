@@ -53,7 +53,10 @@
 			preserve:bFALSE, // preserve execution order of all loaded scripts (regardless of preloading)
 			base:"", // base path to prepend to all non-absolute-path scripts
 			which:sHEAD // which DOM object ("head" or "body") to append scripts to
-		}
+		},
+		fEVAL = global.execScript ? // eval in global scope
+		  function(code) {return global.execScript(code)} : // in IE use execScript function 
+		  function(code) {return eval.call(global, code)}
 	;
 	
 	append_to[sHEAD] = fGETELEMENTSBYTAGNAME(sHEAD);
@@ -130,7 +133,7 @@
 				fSETTIMEOUT(function(){ loadTriggerExecute(scriptentry); },0);
 			}
 		}
-		function createScriptTag(scriptentry,src,type,charset,rel,onload,scriptText) {
+		function createScriptTag(scriptentry,src,type,charset,rel,onload) {
 			fSETTIMEOUT(function(){
 				if (append_to[scriptentry[sWHICH]][0] === null) { // append_to object not yet ready
 					fSETTIMEOUT(arguments.callee,25); 
@@ -145,10 +148,6 @@
 					fSETATTRIBUTE("src",src);
 				}
 				append_to[scriptentry[sWHICH]][0].appendChild(scriptElem);
-				if (typeof scriptText === sSTRING) { // script text already avaiable from XHR preload, so just inject it
-					scriptElem.text = scriptText;
-					handleScriptLoad(scriptElem,scriptentry,bTRUE); // manually call 'load' callback function, skipReadyCheck=true
-				}
 			},0);
 		}
 		function loadScriptElem(scriptentry,src,type,charset) {
@@ -182,7 +181,8 @@
 			}
 			else if (!first_pass) { // preload done, so "execute" script via injection
 				all_scripts[scriptentry[sSRCURI]] = bTRUE;
-				createScriptTag(scriptentry,src,type,charset,"",null,scriptentry.xhr.responseText);
+				fEVAL(scriptentry.xhr.responseText + "\n//@ sourceURL=" + src);
+				handleScriptLoad(null,scriptentry,bTRUE);
 				scriptentry.xhr = null;
 			}
 		}
